@@ -1,0 +1,86 @@
+name: Deploy to GitHub Pages
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+
+permissions:
+    contents: read
+    pages: write
+    id-token: write
+
+concurrency:
+    group: pages
+    cancel-in-progress: false
+
+env:
+    DOXYGEN_VERSION: 1.18.0
+    # Project site at https://atmo-engine.github.io/docs/. Set the DOCS_SITE_BASE repository variable to "/"
+    # once docs.atmo-engine.com points at Pages.
+    DOCS_SITE_BASE: ${{ vars.DOCS_SITE_BASE || '/docs/' }}
+    ATMO_ENGINE_DIR: engine
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Read engine ref from docs.config.ts
+              id: engine
+              run: echo "ref=$(sed -nE 's/^[[:space:]]*ref:[[:space:]]*"([^"]+)".*/\1/p' docs.config.ts | head -1)" >> "$GITHUB_OUTPUT"
+
+            - uses: actions/checkout@v4
+              with:
+                  repository: ATMO-Engine/atmo
+                  ref: ${{ steps.engine.outputs.ref }}
+                  path: engine
+
+            - name: Install Doxygen
+              run: |
+                  curl -fsSL "https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_VERSION//./_}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz" | tar -xz -C "$RUNNER_TEMP"
+                  echo "$RUNNER_TEMP/doxygen-${DOXYGEN_VERSION}/bin" >> "$GITHUB_PATH"
+
+            - uses: pnpm/action-setup@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version-file: .nvmrc
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm api
+            - run: pnpm build
+
+            # Every version lives under its own prefix; the root holds versions.json and a redirect.
+            - name: Assemble site
+              run: |
+                  version=$(node -p 'require("./versions.json").stable ?? "latest"')
+                  mkdir -p _site
+                  cp -r dist _site/latest
+                  cp versions.json _site/
+                  cp dist/404.html _site/404.html
+                  target="${DOCS_SITE_BASE%/}/${version}/"
+                  cat > _site/index.html <<EOF
+                  <!doctype html>
+                  <meta charset="utf-8">
+                  <title>ATMO Engine documentation</title>
+                  <meta http-equiv="refresh" content="0; url=${target}">
+                  <link rel="canonical" href="${target}">
+                  <a href="${target}">ATMO Engine documentation</a>
+                  EOF
+
+            - uses: actions/upload-pages-artifact@v3
+              with:
+                  path: _site
+
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        environment:
+            name: github-pages
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            - id: deployment
+              uses: actions/deploy-pages@v4

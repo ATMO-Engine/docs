@@ -1,0 +1,12 @@
+{
+    "$comment": "Registry of published versions. The copy on main is deployed to the site root and read at runtime by every version's switcher.",
+    "stable": null,
+    "versions": [
+        {
+            "slug": "latest",
+            "label": "latest (dev)",
+            "engineRef": "main",
+            "status": "dev"
+        }
+    ]
+}

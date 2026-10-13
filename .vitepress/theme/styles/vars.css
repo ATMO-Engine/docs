@@ -1,0 +1,119 @@
+/**
+ * Design tokens from the ATMO Figma (editor UI, light). Dark values are derived from the same ink.
+ * Fonts: Nunito Sans (UI) and JetBrains Mono (code, numbers), self-hosted.
+ */
+:root {
+    /* Figma palette */
+    --atmo-ink: #121221;
+    --atmo-ink-2: #1c1c28;
+    --atmo-slate: #5b6474;
+    --atmo-mist: #9aa2b1;
+    --atmo-line: #e8eaed;
+    --atmo-line-strong: #dcdfe4;
+    --atmo-surface: #f4f5f7;
+    --atmo-canvas: #f5f5f5;
+    --atmo-blue: #4c6ef5;
+    --atmo-blue-deep: #0612a1;
+    --atmo-blue-soft: #eef1fe;
+    --atmo-x: #e5484d;
+    --atmo-y: #30a46c;
+    --atmo-z: #4c6ef5;
+    --atmo-pink: #d6409f;
+    --atmo-radius: 6px;
+    --atmo-radius-lg: 12px;
+    --atmo-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.1);
+    --atmo-shadow-lg: 0 12px 32px rgba(18, 18, 33, 0.12), 0 2px 6px rgba(18, 18, 33, 0.08);
+
+    --vp-font-family-base:
+        "Nunito Sans Variable", "Nunito Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --vp-font-family-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+    --vp-c-bg: #ffffff;
+    --vp-c-bg-alt: var(--atmo-surface);
+    --vp-c-bg-soft: var(--atmo-surface);
+    --vp-c-bg-elv: #ffffff;
+    --vp-c-text-1: var(--atmo-ink-2);
+    --vp-c-text-2: var(--atmo-slate);
+    --vp-c-text-3: var(--atmo-mist);
+    --vp-c-divider: var(--atmo-line);
+    --vp-c-border: var(--atmo-line-strong);
+    --vp-c-gutter: var(--atmo-line);
+
+    --vp-c-brand-1: #3651d6;
+    --vp-c-brand-2: var(--atmo-blue);
+    --vp-c-brand-3: var(--atmo-blue-deep);
+    --vp-c-brand-soft: rgba(76, 110, 245, 0.12);
+
+    /* Primary buttons are ink, like the editor's primary actions. */
+    --vp-button-brand-bg: var(--atmo-ink);
+    --vp-button-brand-border: var(--atmo-ink);
+    --vp-button-brand-text: #ffffff;
+    --vp-button-brand-hover-bg: var(--atmo-ink-2);
+    --vp-button-brand-hover-border: var(--atmo-ink-2);
+    --vp-button-brand-hover-text: #ffffff;
+    --vp-button-brand-active-bg: #000000;
+    --vp-button-brand-active-border: #000000;
+
+    --atmo-banner-bg: var(--atmo-blue-soft);
+    --atmo-banner-text: var(--atmo-blue-deep);
+    --atmo-preview-bg: var(--vp-c-bg-elv);
+    --atmo-preview-border: var(--vp-c-divider);
+    --atmo-signature-bg: var(--vp-code-block-bg);
+    --atmo-panel-bg: #ffffff;
+}
+
+.dark {
+    --atmo-line: #262636;
+    --atmo-line-strong: #33334a;
+    --atmo-surface: #181826;
+    --atmo-canvas: #0e0e1a;
+    --atmo-blue-soft: rgba(76, 110, 245, 0.16);
+    --atmo-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
+
+    --vp-c-bg: var(--atmo-ink);
+    --vp-c-bg-alt: #0d0d19;
+    --vp-c-bg-soft: var(--atmo-ink-2);
+    --vp-c-bg-elv: var(--atmo-ink-2);
+    --vp-c-text-1: #ececf3;
+    --vp-c-text-2: #a3a9b8;
+    --vp-c-text-3: #6b7283;
+
+    --vp-c-brand-1: #93a6ff;
+    --vp-c-brand-2: #7089f7;
+    --vp-c-brand-3: var(--atmo-blue);
+    --vp-c-brand-soft: rgba(76, 110, 245, 0.18);
+
+    --vp-button-brand-bg: #ececf3;
+    --vp-button-brand-border: #ececf3;
+    --vp-button-brand-text: var(--atmo-ink);
+    --vp-button-brand-hover-bg: #ffffff;
+    --vp-button-brand-hover-border: #ffffff;
+    --vp-button-brand-hover-text: var(--atmo-ink);
+    --vp-button-brand-active-bg: #d6d6e2;
+    --vp-button-brand-active-border: #d6d6e2;
+
+    --atmo-banner-text: #c9d2ff;
+    --atmo-panel-bg: var(--atmo-ink-2);
+}
+
+/* Navbar logo: the editor's app icon on an ink tile (Figma header). */
+.atmo-logo {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 8px;
+    border-radius: var(--atmo-radius);
+    background: var(--atmo-ink-2);
+}
+
+.dark .atmo-logo {
+    box-shadow: inset 0 0 0 1px var(--atmo-line-strong);
+}
+
+.VPNavBarTitle .title {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}

@@ -1,0 +1,902 @@
+/* ATMO landing page. Built on the Figma tokens in styles/vars.css. */
+
+.atmo-home {
+    --home-max: 1240px;
+    --home-gutter: clamp(20px, 4vw, 48px);
+    --hero-base: #f5f5f7;
+    --hero-dot: rgba(18, 18, 33, 0.16);
+    overflow-x: clip;
+}
+
+/* VitePress only hides its "Return to top" bar on the built-in home layout, not on custom ones. */
+.atmo-home-page .VPLocalNav {
+    display: none;
+}
+
+.dark .atmo-home {
+    --hero-base: #0d0d19;
+    --hero-dot: rgba(201, 203, 224, 0.1);
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Hero: an editor viewport with a living scene                                                */
+/* ------------------------------------------------------------------------------------------ */
+
+.home-hero {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: clamp(600px, calc(100svh - var(--vp-nav-height) - var(--vp-layout-top-height, 0px)), 820px);
+    overflow: hidden;
+    border-bottom: 1px solid var(--vp-c-divider);
+    background: var(--hero-base);
+}
+
+/* Static look-alike of the WebGL scene: shown immediately, cross-faded once the canvas is ready. */
+.home-hero__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    background:
+        linear-gradient(
+            90deg,
+            transparent calc(64% - 0.5px),
+            rgba(229, 72, 77, 0.45) calc(64% - 0.5px),
+            rgba(229, 72, 77, 0.45) calc(64% + 0.5px),
+            transparent calc(64% + 0.5px)
+        ),
+        linear-gradient(
+            180deg,
+            transparent calc(44% - 0.5px),
+            rgba(48, 164, 108, 0.45) calc(44% - 0.5px),
+            rgba(48, 164, 108, 0.45) calc(44% + 0.5px),
+            transparent calc(44% + 0.5px)
+        ),
+        radial-gradient(circle at center, var(--hero-dot) 1px, transparent 1.4px) 0 0 / 24px 24px,
+        radial-gradient(60% 70% at 78% 40%, rgba(95, 123, 255, 0.28), transparent 70%),
+        radial-gradient(40% 50% at 96% 88%, rgba(224, 122, 196, 0.24), transparent 70%),
+        var(--hero-base);
+}
+
+.dark .home-hero__backdrop {
+    background:
+        linear-gradient(
+            90deg,
+            transparent calc(64% - 0.5px),
+            rgba(229, 72, 77, 0.38) calc(64% - 0.5px),
+            rgba(229, 72, 77, 0.38) calc(64% + 0.5px),
+            transparent calc(64% + 0.5px)
+        ),
+        linear-gradient(
+            180deg,
+            transparent calc(44% - 0.5px),
+            rgba(48, 164, 108, 0.38) calc(44% - 0.5px),
+            rgba(48, 164, 108, 0.38) calc(44% + 0.5px),
+            transparent calc(44% + 0.5px)
+        ),
+        radial-gradient(circle at center, var(--hero-dot) 1px, transparent 1.4px) 0 0 / 24px 24px,
+        radial-gradient(60% 70% at 78% 40%, rgba(40, 62, 170, 0.45), transparent 70%),
+        radial-gradient(40% 50% at 96% 88%, rgba(110, 40, 120, 0.35), transparent 70%),
+        var(--hero-base);
+}
+
+.home-hero__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 900ms ease;
+}
+
+.home-hero.is-live .home-hero__canvas {
+    opacity: 1;
+}
+
+/* Keeps the copy readable over the scene, wherever the copy sits. */
+.home-hero__copy {
+    position: relative;
+    isolation: isolate;
+}
+
+.home-hero__copy::before {
+    content: "";
+    position: absolute;
+    inset: -96px -160px -96px -50vw;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(closest-side, color-mix(in srgb, var(--hero-base) 88%, transparent) 55%, transparent);
+}
+
+.home-hero::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    z-index: -1;
+    height: 120px;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, var(--vp-c-bg));
+}
+
+.home-hero__label {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    padding: 2px 7px;
+    border-radius: 4px;
+    background: var(--atmo-ink);
+    color: #ffffff;
+    font-family: var(--vp-font-family-mono);
+    font-size: 11px;
+    line-height: 16px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 300ms ease;
+    will-change: transform;
+}
+
+.dark .home-hero__label {
+    background: #ececf3;
+    color: var(--atmo-ink);
+}
+
+.home-hero.is-live .home-hero__label {
+    opacity: 1;
+}
+
+.home-hero__inner {
+    display: grid;
+    flex: 1;
+    grid-template-columns: minmax(0, 1fr) 272px;
+    gap: 48px;
+    align-items: center;
+    width: 100%;
+    max-width: var(--home-max);
+    margin: 0 auto;
+    padding: 72px var(--home-gutter) 112px;
+    pointer-events: none;
+}
+
+.home-hero__inner > * {
+    pointer-events: auto;
+}
+
+.home-hero__copy {
+    max-width: 620px;
+}
+
+.home-hero__eyebrow {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    margin: 0 0 22px;
+    padding: 4px 12px 4px 10px;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--vp-c-bg) 80%, transparent);
+    backdrop-filter: blur(8px);
+    color: var(--vp-c-text-2);
+    font-family: var(--vp-font-family-mono);
+    font-size: 12px;
+    line-height: 20px;
+}
+
+.home-hero__pulse {
+    position: relative;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--atmo-y);
+}
+
+.home-hero__pulse::after {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 1px solid var(--atmo-y);
+    animation: home-pulse 2.4s ease-out infinite;
+}
+
+.home-hero__title {
+    margin: 0;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+}
+
+.home-hero__name {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--vp-c-text-2);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.4;
+}
+
+.home-hero__text {
+    display: block;
+    color: var(--vp-c-text-1);
+    font-size: clamp(40px, 6.2vw, 72px);
+    line-height: 1.02;
+    text-wrap: balance;
+}
+
+.home-hero__tagline {
+    max-width: 520px;
+    margin: 22px 0 0;
+    color: var(--vp-c-text-2);
+    font-size: clamp(16px, 1.6vw, 19px);
+    line-height: 1.6;
+}
+
+.home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 32px;
+}
+
+/* Inspector panel, after the Figma editor's inspector. */
+.home-hero__panel {
+    padding: 14px 0 12px;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: var(--atmo-radius-lg);
+    background: color-mix(in srgb, var(--atmo-panel-bg) 88%, transparent);
+    box-shadow: var(--atmo-shadow-lg);
+    backdrop-filter: blur(12px);
+    font-size: 12px;
+}
+
+.home-hero__panel-caption {
+    margin: 0 14px 10px;
+    color: var(--vp-c-text-3);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.home-hero__entity {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 0 14px 12px;
+    border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.home-hero__entity-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: var(--atmo-radius);
+    background: var(--atmo-blue-soft);
+}
+
+.home-hero__diamond,
+.home-feature__diamond,
+.home-file__diamond {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--atmo-blue);
+    border-radius: 1px;
+    transform: rotate(45deg);
+    transition: border-color 200ms ease;
+}
+
+.home-hero__entity-name {
+    display: block;
+    color: var(--vp-c-text-1);
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+.home-hero__entity-kind {
+    display: block;
+    color: var(--vp-c-text-3);
+    font-size: 11px;
+    line-height: 16px;
+}
+
+.home-hero__component {
+    padding: 10px 14px 0;
+}
+
+.home-hero__component-title {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 0 0 8px;
+    color: var(--vp-c-text-1);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.home-hero__component-title .vpi-chevron-down {
+    width: 12px;
+    height: 12px;
+    color: var(--vp-c-text-2);
+}
+
+.home-hero__fields {
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 6px 8px;
+    align-items: center;
+    margin: 0;
+}
+
+.home-hero__fields dt {
+    color: var(--vp-c-text-2);
+    font-size: 11.5px;
+}
+
+.home-hero__fields dd {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin: 0;
+}
+
+.home-hero__field {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    height: 26px;
+    padding: 0 7px;
+    overflow: hidden;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: var(--atmo-radius);
+    background: var(--vp-c-bg);
+    color: var(--vp-c-text-1);
+    font-family: var(--vp-font-family-mono);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.home-hero__field--wide {
+    grid-column: span 2;
+}
+
+.home-hero__field b {
+    font-family: var(--vp-font-family-base);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.home-hero__field .is-x {
+    color: var(--atmo-x);
+}
+
+.home-hero__field .is-y {
+    color: var(--atmo-y);
+}
+
+.home-hero__field .is-z {
+    color: var(--atmo-z);
+}
+
+.home-hero__hint {
+    margin: 12px 14px 0;
+    color: var(--vp-c-text-3);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Viewport toolbar, after the Figma editor's toolbar (kept light in both themes, like the design). */
+.home-hero__toolbar {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    padding: 4px;
+    border: 1px solid var(--atmo-line-strong);
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: var(--atmo-shadow);
+    transform: translateX(-50%);
+    transition: opacity 400ms ease;
+}
+
+.dark .home-hero__toolbar {
+    border-color: transparent;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.home-hero:not(.is-live) .home-hero__toolbar {
+    opacity: 0.55;
+}
+
+.home-hero__tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--atmo-radius);
+    transition: background-color 150ms ease;
+}
+
+.home-hero__tool:not(:disabled):hover,
+.home-hero__tool.is-active {
+    background: #eef1fe;
+}
+
+.home-hero__tool:focus-visible {
+    outline: 2px solid var(--atmo-blue);
+    outline-offset: 1px;
+}
+
+.home-hero__tool:disabled {
+    cursor: default;
+}
+
+.home-hero__separator {
+    margin: 0 6px;
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Sections                                                                                    */
+/* ------------------------------------------------------------------------------------------ */
+
+.home-section {
+    max-width: var(--home-max);
+    margin: 0 auto;
+    padding: 96px var(--home-gutter) 0;
+}
+
+.home-section__header {
+    max-width: 680px;
+    margin-bottom: 36px;
+}
+
+.home-section__eyebrow {
+    margin: 0 0 10px;
+    color: var(--vp-c-brand-1);
+    font-family: var(--vp-font-family-mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.home-section__title {
+    margin: 0;
+    color: var(--vp-c-text-1);
+    font-size: clamp(28px, 3.4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    text-wrap: balance;
+}
+
+.home-section__lead {
+    margin: 16px 0 0;
+    color: var(--vp-c-text-2);
+    font-size: 17px;
+    line-height: 1.65;
+}
+
+.home-card {
+    border: 1px solid var(--vp-c-divider);
+    border-radius: var(--atmo-radius-lg);
+    background: var(--atmo-panel-bg);
+}
+
+.home-card__caption {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    margin: 0;
+    color: var(--vp-c-text-3);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Features */
+.home-features__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.home-feature {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    transition:
+        border-color 200ms ease,
+        transform 200ms ease,
+        box-shadow 200ms ease;
+}
+
+.home-feature:hover {
+    border-color: var(--atmo-line-strong);
+    box-shadow: var(--atmo-shadow-lg);
+    transform: translateY(-2px);
+}
+
+.home-feature__title {
+    margin: 16px 0 8px;
+    color: var(--vp-c-text-1);
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+}
+
+.home-feature__text {
+    flex: 1;
+    margin: 0;
+    color: var(--vp-c-text-2);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.home-feature__sample {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 18px 0;
+}
+
+.home-feature__chip,
+.home-feature__code {
+    padding: 3px 8px;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: var(--atmo-radius);
+    background: var(--vp-c-bg-soft);
+    color: var(--vp-c-text-1);
+    font-size: 12px;
+    line-height: 18px;
+}
+
+.home-feature__code {
+    font-family: var(--vp-font-family-mono);
+    font-size: 11.5px;
+}
+
+.home-feature__link {
+    color: var(--vp-c-brand-1);
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.home-feature__link:hover span {
+    margin-left: 3px;
+}
+
+/* Code showcase */
+/* <Content /> wraps the Markdown in several divs: lay out whichever one directly holds the files. */
+.home-showcase__files div:has(> .home-file) {
+    display: grid;
+    /* The Luau sample has the longest lines: give it the wider column. */
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 16px;
+    align-items: stretch;
+}
+
+.home-file {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: var(--atmo-radius-lg);
+    background: var(--atmo-panel-bg);
+}
+
+.vp-doc .home-file .home-file__tab {
+    display: inline-flex;
+    gap: 9px;
+    align-items: center;
+    align-self: flex-start;
+    margin: 8px;
+    padding: 5px 12px;
+    border-radius: var(--atmo-radius);
+    background: var(--atmo-blue-soft);
+    color: var(--atmo-blue-deep);
+    font-size: 12.5px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+.dark .vp-doc .home-file .home-file__tab {
+    color: #c9d2ff;
+}
+
+.home-file__diamond.is-script {
+    border-color: var(--atmo-pink);
+}
+
+.home-file__diamond.is-native {
+    border-color: var(--atmo-x);
+}
+
+.vp-doc .home-file div[class*="language-"] {
+    flex: 1;
+    margin: 0;
+    border-top: 1px solid var(--vp-c-divider);
+    border-radius: 0;
+}
+
+.vp-doc .home-file div[class*="language-"] code {
+    font-size: 13px;
+}
+
+.vp-doc .home-file .home-file__note {
+    margin: 0;
+    padding: 10px 16px;
+    border-top: 1px solid var(--vp-c-divider);
+    color: var(--vp-c-text-3);
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+
+/* Roadmap */
+.home-roadmap {
+    padding-bottom: 112px;
+}
+
+.home-roadmap__card {
+    position: relative;
+    overflow: hidden;
+}
+
+.home-roadmap__track {
+    display: grid;
+    grid-auto-columns: minmax(220px, 1fr);
+    grid-auto-flow: column;
+    margin: 0;
+    padding: 28px 8px 28px;
+    overflow-x: auto;
+    list-style: none;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: thin;
+}
+
+/* When the phases don't fit, fade the right edge to show the track scrolls. */
+@media (max-width: 1180px) {
+    .home-roadmap__track {
+        padding-right: 64px;
+        mask-image: linear-gradient(90deg, #000 calc(100% - 72px), transparent);
+    }
+}
+
+.home-roadmap__track:focus-visible {
+    outline: 2px solid var(--atmo-blue);
+    outline-offset: -2px;
+}
+
+.home-roadmap__phase {
+    position: relative;
+    padding: 0 20px;
+    scroll-snap-align: start;
+}
+
+.home-roadmap__node {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 22px;
+    margin-bottom: 18px;
+}
+
+/* The rail: each phase draws the segment to its right, colored by progress. */
+.home-roadmap__node::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 22px;
+    right: -20px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--vp-c-divider);
+}
+
+.home-roadmap__phase:last-child .home-roadmap__node::after {
+    display: none;
+}
+
+.home-roadmap__phase.is-done .home-roadmap__node::after {
+    background: var(--atmo-y);
+}
+
+.home-roadmap__phase.is-active .home-roadmap__node::after {
+    background: linear-gradient(90deg, var(--atmo-blue), var(--vp-c-divider));
+}
+
+.home-roadmap__diamond {
+    position: relative;
+    width: 13px;
+    height: 13px;
+    margin-left: 4px;
+    border: 2px solid var(--vp-c-text-3);
+    border-radius: 2px;
+    background: var(--atmo-panel-bg);
+    transform: rotate(45deg);
+}
+
+.is-done .home-roadmap__diamond {
+    border-color: var(--atmo-y);
+    background: var(--atmo-y);
+}
+
+.is-active .home-roadmap__diamond {
+    border-color: var(--atmo-blue);
+    background: var(--atmo-blue);
+}
+
+.is-active .home-roadmap__diamond::after {
+    content: "";
+    position: absolute;
+    inset: -6px;
+    border: 1.5px solid var(--atmo-blue);
+    border-radius: 3px;
+    animation: home-pulse 2.4s ease-out infinite;
+}
+
+.home-roadmap__label {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    margin: 0;
+    color: var(--vp-c-text-2);
+    font-family: var(--vp-font-family-mono);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.home-roadmap__status {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--vp-c-bg-soft);
+    color: var(--vp-c-text-3);
+    font-family: var(--vp-font-family-base);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.is-done .home-roadmap__status {
+    background: color-mix(in srgb, var(--atmo-y) 14%, transparent);
+    color: var(--atmo-y);
+}
+
+.is-active .home-roadmap__status {
+    background: var(--atmo-blue-soft);
+    color: var(--vp-c-brand-1);
+}
+
+.home-roadmap__title {
+    margin: 8px 0 12px;
+    color: var(--vp-c-text-1);
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.is-planned .home-roadmap__title {
+    color: var(--vp-c-text-2);
+}
+
+.home-roadmap__items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.home-roadmap__items li {
+    position: relative;
+    padding-left: 14px;
+    color: var(--vp-c-text-2);
+    font-size: 13.5px;
+    line-height: 1.55;
+}
+
+.home-roadmap__items li + li {
+    margin-top: 6px;
+}
+
+.home-roadmap__items li::before {
+    content: "";
+    position: absolute;
+    top: 0.62em;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--vp-c-text-3);
+    transform: rotate(45deg);
+}
+
+.is-done .home-roadmap__items li::before {
+    background: var(--atmo-y);
+}
+
+.is-active .home-roadmap__items li::before {
+    background: var(--atmo-blue);
+}
+
+@keyframes home-pulse {
+    from {
+        opacity: 0.9;
+        transform: scale(0.7);
+    }
+    to {
+        opacity: 0;
+        transform: scale(1.6);
+    }
+}
+
+/* ------------------------------------------------------------------------------------------ */
+/* Responsive                                                                                  */
+/* ------------------------------------------------------------------------------------------ */
+
+@media (max-width: 1080px) {
+    .home-features__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .home-hero__inner {
+        grid-template-columns: minmax(0, 1fr);
+        padding-top: 56px;
+    }
+
+    .home-hero__panel {
+        display: none;
+    }
+
+    .home-hero__copy::before {
+        inset: -64px -48px;
+    }
+
+    .home-showcase__files div:has(> .home-file) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .home-features__grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .home-section {
+        padding-top: 72px;
+    }
+
+    .home-hero__toolbar {
+        bottom: 20px;
+    }
+
+    .home-hero__tool {
+        width: 30px;
+        height: 30px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-hero__pulse::after,
+    .is-active .home-roadmap__diamond::after {
+        animation: none;
+    }
+
+    .home-feature,
+    .home-hero__canvas {
+        transition: none;
+    }
+}

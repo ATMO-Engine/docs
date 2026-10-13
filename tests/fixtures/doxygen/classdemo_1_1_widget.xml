@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen version="1.18.0">
+  <compounddef id="classdemo_1_1_widget" kind="class" language="C++" prot="public" final="yes">
+    <compoundname>demo::Widget</compoundname>
+    <basecompoundref prot="public" virt="non-virtual">Base&lt; int &gt;</basecompoundref>
+    <innerclass refid="structdemo_1_1_widget_1_1_secret" prot="private">demo::Widget::Secret</innerclass>
+    <includes local="no">demo/widget.hpp</includes>
+    <sectiondef kind="public-func">
+      <memberdef kind="function" id="classdemo_1_1_widget_1aCtor" prot="public" static="no" const="no" explicit="yes" inline="no" virt="non-virtual">
+        <type></type>
+        <definition>demo::Widget::Widget</definition>
+        <argsstring>(int size)</argsstring>
+        <name>Widget</name>
+        <qualifiedname>demo::Widget::Widget</qualifiedname>
+        <param><type>int</type><declname>size</declname><defval>0</defval></param>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="15"/>
+      </memberdef>
+      <memberdef kind="function" id="classdemo_1_1_widget_1aDtor" prot="public" static="no" const="no" explicit="no" inline="no" virt="virtual">
+        <type></type>
+        <definition>demo::Widget::~Widget</definition>
+        <argsstring>()</argsstring>
+        <name>~Widget</name>
+        <qualifiedname>demo::Widget::~Widget</qualifiedname>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="16"/>
+      </memberdef>
+      <memberdef kind="function" id="classdemo_1_1_widget_1aSize" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>const std::string &amp;</type>
+        <definition>const std::string &amp; demo::Widget::size</definition>
+        <argsstring>(const std::string &amp;unit) const noexcept</argsstring>
+        <name>size</name>
+        <qualifiedname>demo::Widget::size</qualifiedname>
+        <param><type>const std::string &amp;</type><declname>unit</declname></param>
+        <briefdescription><para>Returns the size. </para></briefdescription>
+        <detaileddescription>
+<para>Use <computeroutput>size()</computeroutput> with <computeroutput><ref refid="namespacedemo_1aMake" kindref="member">makeWidget</ref></computeroutput>.</para>
+<para><itemizedlist>
+<listitem><para>first <bold>item</bold></para></listitem>
+<listitem><para>second item</para></listitem>
+</itemizedlist></para>
+<para><programlisting filename=".cpp"><codeline><highlight class="normal">auto<sp/>w<sp/>=<sp/>demo::makeWidget(2);</highlight></codeline>
+<codeline><highlight class="normal">w.size(&quot;px&quot;);</highlight></codeline>
+</programlisting></para>
+<para><simplesect kind="note"><para>Never {{ interpolated }}. </para></simplesect><parameterlist kind="param"><parameteritem>
+<parameternamelist><parametername direction="in">unit</parametername></parameternamelist>
+<parameterdescription><para>The unit. </para></parameterdescription>
+</parameteritem></parameterlist><simplesect kind="return"><para>The size, as text. </para></simplesect><simplesect kind="see"><para><ref refid="namespacedemo_1aMake" kindref="member">demo::makeWidget</ref></para></simplesect></para>
+        </detaileddescription>
+        <location file="src/demo/widget.hpp" line="20"/>
+      </memberdef>
+      <memberdef kind="function" id="classdemo_1_1_widget_1aResize1" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void demo::Widget::resize</definition>
+        <argsstring>(int size)</argsstring>
+        <name>resize</name>
+        <qualifiedname>demo::Widget::resize</qualifiedname>
+        <param><type>int</type><declname>size</declname></param>
+        <briefdescription><para>Resizes uniformly. </para></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="22"/>
+      </memberdef>
+      <memberdef kind="function" id="classdemo_1_1_widget_1aResize2" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>void</type>
+        <definition>void demo::Widget::resize</definition>
+        <argsstring>(int width, int height)</argsstring>
+        <name>resize</name>
+        <qualifiedname>demo::Widget::resize</qualifiedname>
+        <param><type>int</type><declname>width</declname></param>
+        <param><type>int</type><declname>height</declname></param>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="23"/>
+      </memberdef>
+      <memberdef kind="function" id="classdemo_1_1_widget_1aEq" prot="public" static="no" const="yes" explicit="no" inline="no" virt="non-virtual">
+        <type>bool</type>
+        <definition>bool demo::Widget::operator==</definition>
+        <argsstring>(const Widget &amp;other) const =default</argsstring>
+        <name>operator==</name>
+        <qualifiedname>demo::Widget::operator==</qualifiedname>
+        <param><type>const <ref refid="classdemo_1_1_widget" kindref="compound">Widget</ref> &amp;</type><declname>other</declname></param>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="24"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="public-static-func">
+      <memberdef kind="function" id="classdemo_1_1_widget_1aCreate" prot="public" static="yes" const="no" explicit="no" inline="no" virt="non-virtual">
+        <templateparamlist><param><type>typename T</type></param></templateparamlist>
+        <type>std::shared_ptr&lt; T &gt;</type>
+        <definition>std::shared_ptr&lt; T &gt; demo::Widget::create</definition>
+        <argsstring>()</argsstring>
+        <name>create</name>
+        <qualifiedname>demo::Widget::create</qualifiedname>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="26"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="protected-func">
+      <memberdef kind="function" id="classdemo_1_1_widget_1aOnResize" prot="protected" static="no" const="no" explicit="no" inline="no" virt="pure-virtual">
+        <type>void</type>
+        <definition>virtual void demo::Widget::onResize</definition>
+        <argsstring>()=0</argsstring>
+        <name>onResize</name>
+        <qualifiedname>demo::Widget::onResize</qualifiedname>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="30"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="private-attrib">
+      <memberdef kind="variable" id="classdemo_1_1_widget_1aMSize" prot="private" static="no" mutable="no">
+        <type>int</type>
+        <definition>int demo::Widget::m_size</definition>
+        <argsstring></argsstring>
+        <name>m_size</name>
+        <qualifiedname>demo::Widget::m_size</qualifiedname>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="33"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription><para>A <emphasis>demo</emphasis> widget &lt;T&gt; with * stars. </para></briefdescription>
+    <detaileddescription></detaileddescription>
+    <location file="src/demo/widget.hpp" line="12"/>
+  </compounddef>
+</doxygen>

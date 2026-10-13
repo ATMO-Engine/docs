@@ -1,0 +1,11 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygenindex version="1.18.0" xml:lang="en-US">
+  <compound refid="namespacedemo" kind="namespace"><name>demo</name></compound>
+  <compound refid="classdemo_1_1_widget" kind="class"><name>demo::Widget</name></compound>
+  <compound refid="structdemo_1_1_widget_1_1_secret" kind="struct"><name>demo::Widget::Secret</name></compound>
+  <compound refid="namespaceglz" kind="namespace"><name>glz</name></compound>
+  <compound refid="structglz_1_1meta_3_01demo_1_1_widget_01_4" kind="struct"><name>glz::meta&lt; demo::Widget &gt;</name></compound>
+  <compound refid="widget_8hpp" kind="file"><name>widget.hpp</name></compound>
+  <compound refid="widget_8cpp" kind="file"><name>widget.cpp</name></compound>
+  <compound refid="dir_src" kind="dir"><name>src</name></compound>
+</doxygenindex>

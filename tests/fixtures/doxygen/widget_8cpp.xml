@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen version="1.18.0">
+  <compounddef id="widget_8cpp" kind="file" language="C++">
+    <compoundname>widget.cpp</compoundname>
+    <briefdescription></briefdescription>
+    <detaileddescription></detaileddescription>
+    <location file="src/demo/widget.cpp"/>
+  </compounddef>
+</doxygen>

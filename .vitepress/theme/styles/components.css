@@ -1,0 +1,125 @@
+/* Version switcher (navbar) */
+.version-switcher {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-left: 12px;
+}
+
+.version-switcher__button {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0 10px;
+    height: 32px;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 8px;
+    color: var(--vp-c-text-1);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.version-switcher__button:hover {
+    border-color: var(--vp-c-brand-1);
+}
+
+.version-switcher__icon {
+    width: 14px;
+    height: 14px;
+}
+
+.version-switcher__menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 100;
+    min-width: 180px;
+    margin: 0;
+    padding: 6px;
+    list-style: none;
+    border: 1px solid var(--vp-c-divider);
+    border-radius: 12px;
+    background: var(--vp-c-bg-elv);
+    box-shadow: var(--vp-shadow-3);
+}
+
+.version-switcher__item {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    color: var(--vp-c-text-1);
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.version-switcher__item:hover,
+.version-switcher__item:focus-visible {
+    background: var(--vp-c-default-soft);
+}
+
+.version-switcher__item.is-current {
+    color: var(--vp-c-brand-1);
+    font-weight: 600;
+}
+
+.version-switcher__tag {
+    color: var(--vp-c-text-3);
+    font-size: 12px;
+}
+
+/* Outdated / development version banner. Fixed above the nav; its height is published as
+   --vp-layout-top-height by VersionBanner.vue. The :has() rule avoids a jump before hydration. */
+:root:has(.version-banner) {
+    --vp-layout-top-height: 38px;
+}
+
+.version-banner {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: calc(var(--vp-z-index-nav) + 1);
+    line-height: 21px;
+    padding: 8px 24px;
+    background: var(--atmo-banner-bg);
+    color: var(--atmo-banner-text);
+    font-size: 14px;
+    text-align: center;
+}
+
+.version-banner {
+    border-bottom: 1px solid var(--vp-c-divider);
+}
+
+.version-banner a {
+    margin-left: 4px;
+    color: var(--vp-c-brand-1);
+    font-weight: 500;
+}
+
+/* [[...]] references */
+.vp-doc a.atmo-ref code {
+    color: var(--vp-c-brand-1);
+}
+
+.atmo-ref--broken {
+    color: var(--vp-c-danger-1);
+    text-decoration: underline wavy;
+    cursor: help;
+}
+
+.ref-preview {
+    position: absolute;
+    z-index: 200;
+    padding: 10px 14px;
+    border: 1px solid var(--atmo-preview-border);
+    border-radius: 10px;
+    background: var(--atmo-preview-bg);
+    box-shadow: var(--vp-shadow-3);
+    color: var(--vp-c-text-2);
+    font-size: 13px;
+    line-height: 1.5;
+    pointer-events: none;
+}

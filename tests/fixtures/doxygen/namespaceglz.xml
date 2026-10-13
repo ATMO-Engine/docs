@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen version="1.18.0">
+  <compounddef id="namespaceglz" kind="namespace" language="C++">
+    <compoundname>glz</compoundname>
+    <innerclass refid="structglz_1_1meta_3_01demo_1_1_widget_01_4" prot="public">glz::meta&lt; demo::Widget &gt;</innerclass>
+    <briefdescription></briefdescription>
+    <detaileddescription></detaileddescription>
+  </compounddef>
+</doxygen>

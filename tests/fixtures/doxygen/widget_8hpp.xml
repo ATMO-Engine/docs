@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen version="1.18.0">
+  <compounddef id="widget_8hpp" kind="file" language="C++">
+    <compoundname>widget.hpp</compoundname>
+    <innerclass refid="classdemo_1_1_widget" prot="public">demo::Widget</innerclass>
+    <innernamespace refid="namespacedemo">demo</innernamespace>
+    <sectiondef kind="define">
+      <memberdef kind="define" id="widget_8hpp_1aVersion" prot="public" static="no">
+        <name>DEMO_VERSION</name>
+        <initializer>&quot;1.0&quot;</initializer>
+        <briefdescription><para>Library version. </para></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="3"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacedemo_1aMake" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classdemo_1_1_widget" kindref="compound">Widget</ref></type>
+        <definition>Widget demo::makeWidget</definition>
+        <argsstring>(int size)</argsstring>
+        <name>makeWidget</name>
+        <qualifiedname>demo::makeWidget</qualifiedname>
+        <param><type>int</type><declname>size</declname></param>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="40"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription></briefdescription>
+    <detaileddescription></detaileddescription>
+    <location file="src/demo/widget.hpp"/>
+  </compounddef>
+</doxygen>

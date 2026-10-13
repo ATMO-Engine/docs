@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen version="1.18.0">
+  <compounddef id="namespacedemo" kind="namespace" language="C++">
+    <compoundname>demo</compoundname>
+    <innerclass refid="classdemo_1_1_widget" prot="public">demo::Widget</innerclass>
+    <sectiondef kind="enum">
+      <memberdef kind="enum" id="namespacedemo_1aColor" prot="public" static="no" strong="yes">
+        <type>std::uint8_t</type>
+        <name>Color</name>
+        <qualifiedname>demo::Color</qualifiedname>
+        <enumvalue id="namespacedemo_1aColorRed" prot="public">
+          <name>Red</name>
+          <initializer>= 1</initializer>
+          <briefdescription><para>The red one. </para></briefdescription>
+          <detaileddescription></detaileddescription>
+        </enumvalue>
+        <enumvalue id="namespacedemo_1aColorBlue" prot="public">
+          <name>Blue</name>
+          <briefdescription></briefdescription>
+          <detaileddescription></detaileddescription>
+        </enumvalue>
+        <briefdescription><para>Widget colors. </para></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="8"/>
+      </memberdef>
+    </sectiondef>
+    <sectiondef kind="func">
+      <memberdef kind="function" id="namespacedemo_1aMake" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type><ref refid="classdemo_1_1_widget" kindref="compound">Widget</ref></type>
+        <definition>Widget demo::makeWidget</definition>
+        <argsstring>(int size)</argsstring>
+        <name>makeWidget</name>
+        <qualifiedname>demo::makeWidget</qualifiedname>
+        <param><type>int</type><declname>size</declname></param>
+        <briefdescription><para>Creates a <ref refid="classdemo_1_1_widget" kindref="compound">Widget</ref>. </para></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="40"/>
+      </memberdef>
+      <memberdef kind="function" id="namespacedemo_1aDescription" prot="public" static="no" const="no" explicit="no" inline="no" virt="non-virtual">
+        <type>const char *</type>
+        <definition>const char * demo::description</definition>
+        <argsstring>()</argsstring>
+        <name>description</name>
+        <qualifiedname>demo::description</qualifiedname>
+        <briefdescription></briefdescription>
+        <detaileddescription></detaileddescription>
+        <location file="src/demo/widget.hpp" line="42"/>
+      </memberdef>
+    </sectiondef>
+    <briefdescription><para>Demo namespace. </para></briefdescription>
+    <detaileddescription></detaileddescription>
+    <location file="src/demo/widget.hpp" line="5"/>
+  </compounddef>
+</doxygen>

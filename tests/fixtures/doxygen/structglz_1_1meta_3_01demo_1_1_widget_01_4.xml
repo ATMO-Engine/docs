@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<doxygen version="1.18.0">
+  <compounddef id="structglz_1_1meta_3_01demo_1_1_widget_01_4" kind="struct" language="C++" prot="public">
+    <compoundname>glz::meta&lt; demo::Widget &gt;</compoundname>
+    <briefdescription></briefdescription>
+    <detaileddescription></detaileddescription>
+    <location file="src/demo/widget.hpp" line="50"/>
+  </compounddef>
+</doxygen>

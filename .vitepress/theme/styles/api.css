@@ -1,0 +1,73 @@
+/* Generated C++ API pages */
+.api-page .vp-doc h1 {
+    font-family: var(--vp-font-family-mono);
+    font-size: 26px;
+    word-break: break-word;
+}
+
+.api-page .vp-doc h3 {
+    font-family: var(--vp-font-family-mono);
+    font-size: 17px;
+}
+
+.api-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 20px;
+    margin: 12px 0 16px;
+    color: var(--vp-c-text-2);
+    font-size: 14px;
+}
+
+.api-meta-label {
+    margin-right: 4px;
+    color: var(--vp-c-text-3);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.vp-doc pre.api-signature {
+    margin: 12px 0 16px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--atmo-signature-bg);
+    font-family: var(--vp-font-family-mono);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.vp-doc pre.api-signature code {
+    padding: 0;
+    background: none;
+    color: var(--vp-c-text-1);
+    font-size: inherit;
+    white-space: pre;
+}
+
+.vp-doc pre.api-signature a {
+    color: var(--vp-c-brand-1);
+    text-decoration: none;
+}
+
+.vp-doc pre.api-signature a:hover {
+    text-decoration: underline;
+}
+
+.api-kw {
+    color: var(--vp-c-purple-1, #8e5cd9);
+}
+
+.api-name {
+    font-weight: 600;
+}
+
+.api-param {
+    color: var(--vp-c-text-2);
+}
+
+.api-overview__source {
+    color: var(--vp-c-text-2);
+}

@@ -68,7 +68,7 @@ export function versionNotice(registry: VersionRegistry, slug: string): VersionN
 
 /**
  * Maps the current location to the same page in another version.
- * `pathname` is the full browser path, e.g. `/atmo-docs/1.0/manual/scenes#nodes`.
+ * `pathname` is the full browser path, e.g. `/docs/1.0/manual/scenes#nodes`.
  */
 export function switchVersionPath(pathname: string, siteBase: string, from: string, to: string): string {
     const prefix = `${siteBase}${from}/`;

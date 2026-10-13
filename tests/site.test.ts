@@ -46,9 +46,7 @@ describe("version registry", () => {
 
     it("maps the current page to another version", () => {
         expect(switchVersionPath("/latest/manual/scenes", "/", "latest", "1.1")).toBe("/1.1/manual/scenes");
-        expect(switchVersionPath("/atmo-docs/1.0/api/cpp/", "/atmo-docs/", "1.0", "latest")).toBe(
-            "/atmo-docs/latest/api/cpp/",
-        );
+        expect(switchVersionPath("/docs/1.0/api/cpp/", "/docs/", "1.0", "latest")).toBe("/docs/latest/api/cpp/");
         expect(switchVersionPath("/elsewhere", "/", "latest", "1.1")).toBe("/1.1/");
     });
 });
@@ -56,8 +54,8 @@ describe("version registry", () => {
 describe("resolveDocsConfig", () => {
     const base = defineDocsConfig({
         version: "latest",
-        engine: { repository: "ATMO-Engine/atmo", ref: "main" },
-        repository: "ATMO-Engine/atmo-docs",
+        engine: { repository: "ATMO-Engine/atmo", ref: "main", ciWorkflow: "build.yml" },
+        repository: "ATMO-Engine/docs",
         hostname: "https://docs.atmo-engine.com",
         api: { exclude: [], includePrivate: false },
     });
@@ -72,14 +70,28 @@ describe("resolveDocsConfig", () => {
     it("applies environment overrides", () => {
         const config = resolveDocsConfig(base, {
             DOCS_VERSION: "1.0",
-            DOCS_SITE_BASE: "atmo-docs",
+            DOCS_SITE_BASE: "docs",
             ATMO_ENGINE_DIR: "/tmp/engine",
             ATMO_ENGINE_REF: "v1.0.2",
         });
-        expect(config.base).toBe("/atmo-docs/1.0/");
-        expect(config.siteBase).toBe("/atmo-docs/");
+        expect(config.base).toBe("/docs/1.0/");
+        expect(config.siteBase).toBe("/docs/");
         expect(config.engineDir).toBe("/tmp/engine");
         expect(config.engine.ref).toBe("v1.0.2");
+    });
+
+    it("publishes an alias build under its own path while keeping the version identity", () => {
+        const config = resolveDocsConfig(base, {
+            DOCS_VERSION: "1.1",
+            DOCS_PATH: "stable",
+            DOCS_SITE_BASE: "/docs/",
+            DOCS_HOSTNAME: "https://atmo-engine.github.io/",
+        });
+        expect(config.version).toBe("1.1");
+        expect(config.pathSlug).toBe("stable");
+        expect(config.base).toBe("/docs/stable/");
+        expect(config.hostname).toBe("https://atmo-engine.github.io");
+        expect(resolveDocsConfig(base, {}).pathSlug).toBe("latest");
     });
 
     it("rejects version slugs that are unsafe in URLs", () => {

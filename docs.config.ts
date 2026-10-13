@@ -9,8 +9,9 @@ export const docsConfig = defineDocsConfig({
     engine: {
         repository: "ATMO-Engine/atmo",
         ref: "main",
+        ciWorkflow: "build.yml",
     },
-    repository: "ATMO-Engine/atmo-docs",
+    repository: "ATMO-Engine/docs",
     hostname: "https://docs.atmo-engine.com",
     api: {
         // Third-party specializations (serializers, formatters) are not part of the engine API.

@@ -1,5 +1,5 @@
 import path from "node:path";
-import { defineConfigWithTheme, type DefaultTheme } from "vitepress";
+import { defineConfigWithTheme, type DefaultTheme, type HeadConfig } from "vitepress";
 import docs from "../docs.config.ts";
 import { ROOT_DIR } from "../lib/config.ts";
 import { loadApiIndex } from "../lib/doxygen/load.ts";
@@ -90,6 +90,7 @@ export default defineConfigWithTheme<AtmoThemeConfig>({
         },
         atmo: {
             version: docs.version,
+            pathSlug: docs.pathSlug,
             siteBase: docs.siteBase,
             versions,
             engine: {
@@ -100,10 +101,17 @@ export default defineConfigWithTheme<AtmoThemeConfig>({
         },
     },
 
-    // Preload the UI font (Latin, variable weight) so text renders in Nunito Sans on first paint.
-    transformHead({ assets }) {
+    transformHead({ assets, pageData }) {
+        const head: HeadConfig[] = [];
+        // Preload the UI font (Latin, variable weight) so text renders in Nunito Sans on first paint.
         const font = assets.find((file) => /nunito-sans-latin-wght-normal[^/]*\.woff2$/.test(file));
-        return font ? [["link", { rel: "preload", href: font, as: "font", type: "font/woff2", crossorigin: "" }]] : [];
+        if (font) head.push(["link", { rel: "preload", href: font, as: "font", type: "font/woff2", crossorigin: "" }]);
+        // `/stable/` duplicates a version: point search engines at the version's own URL.
+        if (docs.pathSlug !== docs.version) {
+            const page = pageData.relativePath.replace(/(^|\/)index\.md$/, "$1").replace(/\.md$/, "");
+            head.push(["link", { rel: "canonical", href: `${docs.hostname}${docs.siteBase}${docs.version}/${page}` }]);
+        }
+        return head;
     },
 
     transformPageData(pageData) {

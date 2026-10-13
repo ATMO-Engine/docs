@@ -23,10 +23,10 @@ const { frontmatter, theme, isDark } = useData<AtmoThemeConfig>();
 const hero = computed(
     () => (frontmatter.value.hero ?? {}) as { name?: string; text?: string; tagline?: string; actions?: HeroAction[] },
 );
+// The version slug, not its label: the label of `latest` already names the engine branch.
 const eyebrow = computed(() => {
     const { version, engine } = theme.value.atmo;
-    const label = theme.value.atmo.versions.versions.find((v) => v.slug === version)?.label ?? version;
-    return engine.commit ? `${label} · ${engine.ref} @ ${engine.commit.slice(0, 7)}` : label;
+    return engine.commit ? `${version} · ${engine.ref} @ ${engine.commit.slice(0, 7)}` : `${version} · ${engine.ref}`;
 });
 
 /** Entity kinds of the demo scene: real ATMO entity types, colored like the editor's hierarchy icons. */

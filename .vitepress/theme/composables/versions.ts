@@ -17,7 +17,12 @@ function fetchRegistry(siteBase: string): Promise<VersionRegistry | null> {
     return live;
 }
 
-export function useVersions(): { registry: Ref<VersionRegistry>; current: string; siteBase: string } {
+export function useVersions(): {
+    registry: Ref<VersionRegistry>;
+    current: string;
+    pathSlug: string;
+    siteBase: string;
+} {
     const { theme } = useData<AtmoThemeConfig>();
     const { atmo } = theme.value;
     const registry = ref<VersionRegistry>(atmo.versions);
@@ -25,5 +30,5 @@ export function useVersions(): { registry: Ref<VersionRegistry>; current: string
         const fresh = await fetchRegistry(atmo.siteBase);
         if (fresh) registry.value = fresh;
     });
-    return { registry, current: atmo.version, siteBase: atmo.siteBase };
+    return { registry, current: atmo.version, pathSlug: atmo.pathSlug, siteBase: atmo.siteBase };
 }

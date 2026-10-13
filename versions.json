@@ -4,7 +4,7 @@
     "versions": [
         {
             "slug": "latest",
-            "label": "latest (dev)",
+            "label": "latest (main)",
             "engineRef": "main",
             "status": "dev"
         }

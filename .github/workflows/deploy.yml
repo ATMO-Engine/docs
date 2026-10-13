@@ -1,86 +1,162 @@
-name: Deploy to GitHub Pages
+name: Deploy
 
+# Every documentation version is built from its own branch (`main` → latest, `1.0` → 1.0...) and committed into
+# its own folder of the gh-pages branch, which GitHub Pages serves. See content/en/contributing/versioning.md.
 on:
     push:
-        branches: [main]
+        branches: [main, "[0-9]+.[0-9]+"]
+    # Sent by the engine's notify-docs workflow.
+    repository_dispatch:
+        types: [engine-main, engine-release]
     workflow_dispatch:
+        inputs:
+            version:
+                description: Version to rebuild ("latest", "1.0"...) or "all"
+                default: latest
+    # Safety net in case a dispatch from the engine was missed.
+    schedule:
+        - cron: "17 3 * * *"
 
 permissions:
     contents: read
-    pages: write
-    id-token: write
-
-concurrency:
-    group: pages
-    cancel-in-progress: false
 
 env:
-    DOXYGEN_VERSION: 1.18.0
-    # Project site at https://atmo-engine.github.io/docs/. Set the DOCS_SITE_BASE repository variable to "/"
-    # once docs.atmo-engine.com points at Pages.
+    # Project site at https://atmo-engine.github.io/docs/. Once docs.atmo-engine.com points at Pages, set the
+    # repository variables DOCS_SITE_BASE to "/" and DOCS_HOSTNAME to "https://docs.atmo-engine.com".
     DOCS_SITE_BASE: ${{ vars.DOCS_SITE_BASE || '/docs/' }}
-    ATMO_ENGINE_DIR: engine
+    DOCS_HOSTNAME: ${{ vars.DOCS_HOSTNAME || 'https://atmo-engine.github.io' }}
 
 jobs:
+    plan:
+        name: Plan
+        runs-on: ubuntu-latest
+        outputs:
+            matrix: ${{ steps.plan.outputs.matrix }}
+            has-builds: ${{ steps.plan.outputs.has-builds }}
+            propose-version: ${{ steps.plan.outputs.propose-version }}
+            propose-tag: ${{ steps.plan.outputs.propose-tag }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: ./.github/actions/setup
+            - id: plan
+              run: pnpm tsx scripts/ci/plan.ts
+              env:
+                  PLAN_VERSION: ${{ inputs.version }}
+
     build:
+        name: Build ${{ matrix.path }}
+        needs: plan
+        if: needs.plan.outputs.has-builds == 'true'
         runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
         steps:
             - uses: actions/checkout@v4
+              with:
+                  ref: ${{ matrix.branch }}
+            - uses: ./.github/actions/setup
+            - uses: ./.github/actions/build-docs
+              with:
+                  version: ${{ matrix.version }}
+                  path: ${{ matrix.path }}
+            - uses: actions/upload-artifact@v4
+              with:
+                  name: site-${{ matrix.path }}
+                  path: dist
+                  retention-days: 1
 
-            - name: Read engine ref from docs.config.ts
-              id: engine
-              run: echo "ref=$(sed -nE 's/^[[:space:]]*ref:[[:space:]]*"([^"]+)".*/\1/p' docs.config.ts | head -1)" >> "$GITHUB_OUTPUT"
-
+    publish:
+        name: Publish
+        needs: [plan, build]
+        # Publish the versions that built, even if another one failed (the run still reports the failure).
+        if: ${{ !cancelled() && needs.plan.outputs.has-builds == 'true' }}
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        concurrency:
+            group: gh-pages
+            cancel-in-progress: false
+        steps:
             - uses: actions/checkout@v4
               with:
-                  repository: ATMO-Engine/atmo
-                  ref: ${{ steps.engine.outputs.ref }}
-                  path: engine
-
-            - name: Install Doxygen
-              run: |
-                  curl -fsSL "https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_VERSION//./_}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz" | tar -xz -C "$RUNNER_TEMP"
-                  echo "$RUNNER_TEMP/doxygen-${DOXYGEN_VERSION}/bin" >> "$GITHUB_PATH"
-
-            - uses: pnpm/action-setup@v4
-
-            - uses: actions/setup-node@v4
+                  ref: main
+                  fetch-depth: 0
+            - uses: ./.github/actions/setup
+            - uses: actions/download-artifact@v4
               with:
-                  node-version-file: .nvmrc
-                  cache: pnpm
-
-            - run: pnpm install --frozen-lockfile
-            - run: pnpm api
-            - run: pnpm build
-
-            # Every version lives under its own prefix; the root holds versions.json and a redirect.
-            - name: Assemble site
+                  pattern: site-*
+                  path: _artifacts
+            - name: Commit to gh-pages
               run: |
-                  version=$(node -p 'require("./versions.json").stable ?? "latest"')
-                  mkdir -p _site
-                  cp -r dist _site/latest
-                  cp versions.json _site/
-                  cp dist/404.html _site/404.html
-                  target="${DOCS_SITE_BASE%/}/${version}/"
-                  cat > _site/index.html <<EOF
-                  <!doctype html>
-                  <meta charset="utf-8">
-                  <title>ATMO Engine documentation</title>
-                  <meta http-equiv="refresh" content="0; url=${target}">
-                  <link rel="canonical" href="${target}">
-                  <a href="${target}">ATMO Engine documentation</a>
-                  EOF
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+                  if git ls-remote --exit-code --heads origin gh-pages > /dev/null; then
+                      git fetch origin gh-pages
+                      git worktree add -B gh-pages _pages origin/gh-pages
+                  else
+                      git worktree add --orphan -b gh-pages _pages
+                  fi
+                  published=()
+                  for dir in _artifacts/site-*; do
+                      [ -d "$dir" ] || continue
+                      name="${dir#_artifacts/site-}"
+                      rm -rf "_pages/$name"
+                      cp -r "$dir" "_pages/$name"
+                      published+=("$name")
+                  done
+                  pnpm tsx scripts/ci/site-root.ts _pages
+                  cd _pages
+                  git add -A
+                  if git diff --cached --quiet; then
+                      echo "Nothing changed."
+                      exit 0
+                  fi
+                  git commit -m "Deploy ${published[*]} from ${GITHUB_SHA::7} (${GITHUB_EVENT_NAME})"
+                  git push origin gh-pages
 
-            - uses: actions/upload-pages-artifact@v3
-              with:
-                  path: _site
-
-    deploy:
-        needs: build
+    propose-release:
+        name: Propose ${{ needs.plan.outputs.propose-version }} documentation
+        needs: plan
+        if: needs.plan.outputs.propose-version != ''
         runs-on: ubuntu-latest
-        environment:
-            name: github-pages
-            url: ${{ steps.deployment.outputs.page_url }}
+        permissions:
+            contents: write
+            pull-requests: write
+        env:
+            VERSION: ${{ needs.plan.outputs.propose-version }}
+            TAG: ${{ needs.plan.outputs.propose-tag }}
+            GH_TOKEN: ${{ github.token }}
         steps:
-            - id: deployment
-              uses: actions/deploy-pages@v4
+            - uses: actions/checkout@v4
+              with:
+                  ref: main
+                  fetch-depth: 0
+            - uses: ./.github/actions/setup
+            - name: Create the release branch and the pull request publishing it
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+                  # 1. The X.Y docs branch, pinned to the engine release. Not published until versions.json lists it.
+                  git switch -c "$VERSION"
+                  pnpm tsx scripts/ci/release.ts branch-config "$VERSION" "$TAG"
+                  pnpm prettier --write docs.config.ts
+                  git commit -am "Create the $VERSION documentation for engine $TAG"
+                  git push origin "$VERSION"
+
+                  # 2. A pull request listing it in versions.json as the new stable version.
+                  git switch main
+                  git switch -c "release/$VERSION"
+                  pnpm tsx scripts/ci/release.ts registry "$VERSION" "$TAG"
+                  pnpm prettier --write versions.json
+                  git commit -am "Publish the $VERSION documentation"
+                  git push --force origin "release/$VERSION"
+                  gh pr create --base main --head "release/$VERSION" \
+                      --title "Publish the $VERSION documentation" \
+                      --body "The engine released \`$TAG\`. The \`$VERSION\` branch was created from \`main\` and pinned to it.
+
+                  Merging this pull request adds $VERSION to \`versions.json\` as the stable version: the deploy workflow then publishes \`/$VERSION/\` and moves \`/stable/\` to it. Prepare the branch first if its pages need changes for this release." \
+                      || gh pr view "release/$VERSION"

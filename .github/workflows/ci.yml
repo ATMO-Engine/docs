@@ -1,0 +1,25 @@
+name: CI
+
+on:
+    pull_request:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+
+jobs:
+    check:
+        name: Format, types, tests and build
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: ./.github/actions/setup
+            - run: pnpm format:check
+            - run: pnpm typecheck
+            # Builds against the same engine commit as the deployed site; fails on broken [[references]].
+            - uses: ./.github/actions/build-docs
+            # After the build so the engine API model exists and its rendering regression test runs too.
+            - run: pnpm test

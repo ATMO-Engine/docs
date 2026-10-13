@@ -5,6 +5,8 @@ export interface AtmoThemeConfig extends DefaultTheme.Config {
     atmo: {
         /** Version slug of this build (`latest`, `1.0`...). */
         version: string;
+        /** URL segment of this build: the version, or an alias such as `stable`. */
+        pathSlug: string;
         /** Deployment prefix shared by all versions, ends with `/`. */
         siteBase: string;
         /** Registry known at build time; the switcher refreshes it from `<siteBase>versions.json`. */

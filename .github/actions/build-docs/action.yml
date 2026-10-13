@@ -1,0 +1,68 @@
+name: Build documentation
+description: >
+    Resolve the engine commit to document, generate the C++ API model with Doxygen and build the site into dist/.
+    Expects the docs branch to be checked out and the Setup action to have run.
+
+inputs:
+    version:
+        description: Version to build as (defaults to `version` in docs.config.ts).
+        default: ""
+    path:
+        description: URL segment to publish under, e.g. `stable` (defaults to the version).
+        default: ""
+    doxygen-version:
+        description: Doxygen release to install.
+        default: 1.18.0
+
+outputs:
+    engine-ref:
+        description: Engine commit or tag the documentation was built from.
+        value: ${{ steps.engine.outputs.ref }}
+
+runs:
+    using: composite
+    steps:
+        - id: engine
+          name: Resolve engine ref
+          shell: bash
+          run: pnpm tsx scripts/ci/engine-ref.ts
+          env:
+              GITHUB_TOKEN: ${{ github.token }}
+
+        - uses: actions/checkout@v4
+          with:
+              repository: ${{ steps.engine.outputs.repository }}
+              ref: ${{ steps.engine.outputs.ref }}
+              path: engine
+
+        - id: doxygen-cache
+          uses: actions/cache@v4
+          with:
+              path: ${{ runner.temp }}/doxygen-${{ inputs.doxygen-version }}
+              key: doxygen-${{ runner.os }}-${{ inputs.doxygen-version }}
+
+        - name: Install Doxygen
+          if: steps.doxygen-cache.outputs.cache-hit != 'true'
+          shell: bash
+          env:
+              DOXYGEN_VERSION: ${{ inputs.doxygen-version }}
+          run: |
+              curl -fsSL "https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_VERSION//./_}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz" \
+                  | tar -xz -C "$RUNNER_TEMP"
+
+        - shell: bash
+          run: echo "$RUNNER_TEMP/doxygen-${{ inputs.doxygen-version }}/bin" >> "$GITHUB_PATH"
+
+        - name: Generate API model
+          shell: bash
+          run: pnpm api
+          env:
+              ATMO_ENGINE_DIR: engine
+
+        - name: Build site
+          shell: bash
+          run: pnpm build
+          env:
+              ATMO_ENGINE_DIR: engine
+              DOCS_VERSION: ${{ inputs.version }}
+              DOCS_PATH: ${{ inputs.path }}

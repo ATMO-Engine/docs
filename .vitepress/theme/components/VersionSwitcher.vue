@@ -3,17 +3,17 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { switchVersionPath } from "../../../lib/versions.ts";
 import { useVersions } from "../composables/versions.ts";
 
-const { registry, current, siteBase } = useVersions();
+const { registry, current, pathSlug, siteBase } = useVersions();
 const open = ref(false);
 const root = ref<HTMLElement | null>(null);
-const location = ref({ pathname: `${siteBase}${current}/`, hash: "" });
+const location = ref({ pathname: `${siteBase}${pathSlug}/`, hash: "" });
 
 const currentLabel = computed(() => registry.value.versions.find((v) => v.slug === current)?.label ?? current);
 const entries = computed(() =>
     registry.value.versions.map((version) => ({
         ...version,
         isStable: version.slug === registry.value.stable,
-        href: switchVersionPath(location.value.pathname, siteBase, current, version.slug) + location.value.hash,
+        href: switchVersionPath(location.value.pathname, siteBase, pathSlug, version.slug) + location.value.hash,
     })),
 );
 

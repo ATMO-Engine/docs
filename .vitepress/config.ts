@@ -3,6 +3,7 @@ import { defineConfigWithTheme, type DefaultTheme, type HeadConfig } from "vitep
 import docs from "../docs.config.ts";
 import { ROOT_DIR } from "../lib/config.ts";
 import { loadApiIndex } from "../lib/doxygen/load.ts";
+import { engineDocsPlugin, syncEngineDocs, type EngineDocsOptions } from "../lib/engine-docs.ts";
 import { apiSidebar } from "../lib/doxygen/sidebar.ts";
 import { createRefSystem, formatProblems } from "../lib/refs/index.ts";
 import { slugify } from "../lib/refs/pages.ts";
@@ -17,6 +18,27 @@ const LOCALES = ["en"];
 const isBuild = process.env.NODE_ENV === "production" || process.argv.includes("build");
 
 const versions = parseVersionRegistry(versionsJson);
+
+const engineDocs: EngineDocsOptions = {
+    engineDocsDir: docs.engineDocsDir,
+    contentDir: CONTENT_DIR,
+    locales: LOCALES,
+    manifestPath: path.join(ROOT_DIR, ".cache", "engine-docs.json"),
+};
+let engineFiles = new Set<string>();
+try {
+    engineFiles = new Set(syncEngineDocs(engineDocs).files);
+} catch (error) {
+    if (isBuild) throw error;
+    console.warn(`\x1b[33m⚠\x1b[0m ${(error as Error).message}`);
+}
+if (engineFiles.size === 0) {
+    const message = `No pages found in ${docs.engineDocsDir}: point ATMO_ENGINE_DIR at an engine checkout.`;
+    if (isBuild) throw new Error(message);
+    console.warn(`\x1b[33m⚠\x1b[0m ${message}`);
+}
+const sourceOf = (file: string) => (engineFiles.has(file) ? `engine docs/${file}` : `content/${file}`);
+
 const api = loadApiIndex(docs.apiModelPath);
 if (!api) {
     const message = "API model not found: run `pnpm api` to generate the C++ reference.";
@@ -58,7 +80,12 @@ export default defineConfigWithTheme<AtmoThemeConfig>({
 
     markdown: {
         anchor: { slugify },
+        languageAlias: { slang: "hlsl" },
         config: (md) => refs.plugin(md),
+    },
+
+    vite: {
+        plugins: [engineDocsPlugin(engineDocs, (sync) => (engineFiles = new Set(sync.files)))],
     },
 
     themeConfig: {
@@ -79,8 +106,8 @@ export default defineConfigWithTheme<AtmoThemeConfig>({
         search: { provider: "local" },
         socialLinks: [{ icon: "github", link: `https://github.com/${docs.engine.repository}` }],
         editLink: {
-            // A string, not a function: functions are serialized to the client and lose their closure.
-            pattern: `https://github.com/${docs.repository}/edit/main/content/:path`,
+            // Serialized to the client without its closure: the URL is computed in transformPageData.
+            pattern: (page) => String(page.frontmatter.editUrl ?? ""),
             text: "Edit this page on GitHub",
         },
         docFooter: { prev: "Previous", next: "Next" },
@@ -115,6 +142,9 @@ export default defineConfigWithTheme<AtmoThemeConfig>({
     },
 
     transformPageData(pageData) {
+        pageData.frontmatter.editUrl = engineFiles.has(pageData.filePath)
+            ? `https://github.com/${docs.engine.repository}/edit/main/docs/${pageData.filePath}`
+            : `https://github.com/${docs.repository}/edit/main/content/${pageData.filePath}`;
         // Dynamic API pages: title, description and source link come from the route params.
         const params = pageData.params as { title?: string; description?: string } | undefined;
         if (params?.title) {
@@ -126,7 +156,7 @@ export default defineConfigWithTheme<AtmoThemeConfig>({
     buildEnd() {
         const problems = refs.problems();
         if (problems.length > 0) {
-            throw new Error(`Found ${problems.length} broken reference(s):\n${formatProblems(problems)}`);
+            throw new Error(`Found ${problems.length} broken reference(s):\n${formatProblems(problems, sourceOf)}`);
         }
     },
 });

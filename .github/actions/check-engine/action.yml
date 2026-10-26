@@ -1,0 +1,58 @@
+name: Check engine documentation
+description: >
+    Used by the engine's docs workflow, with the engine checked out in the workspace: checks the formatting of its
+    docs/ pages and builds the site from them, which fails on broken [[references]].
+
+inputs:
+    docs-ref:
+        description: Branch of ATMO-Engine/docs whose tooling builds the site.
+        default: main
+    doxygen-version:
+        description: Doxygen release to install.
+        default: 1.18.0
+
+runs:
+    using: composite
+    steps:
+        - uses: actions/checkout@v4
+          with:
+              repository: ATMO-Engine/docs
+              ref: ${{ inputs.docs-ref }}
+              path: .atmo-docs
+
+        - uses: pnpm/action-setup@v4
+          with:
+              package_json_file: .atmo-docs/package.json
+
+        - uses: actions/setup-node@v4
+          with:
+              node-version-file: .atmo-docs/.nvmrc
+              cache: pnpm
+              cache-dependency-path: .atmo-docs/pnpm-lock.yaml
+
+        - shell: bash
+          working-directory: .atmo-docs
+          run: pnpm install --frozen-lockfile
+
+        - name: Check formatting
+          shell: bash
+          working-directory: .atmo-docs
+          run: pnpm exec prettier --check "$GITHUB_WORKSPACE/docs"
+
+        - uses: ./.atmo-docs/.github/actions/doxygen
+          with:
+              version: ${{ inputs.doxygen-version }}
+
+        - name: Generate API model
+          shell: bash
+          working-directory: .atmo-docs
+          run: pnpm api
+          env:
+              ATMO_ENGINE_DIR: ${{ github.workspace }}
+
+        - name: Build site
+          shell: bash
+          working-directory: .atmo-docs
+          run: pnpm build
+          env:
+              ATMO_ENGINE_DIR: ${{ github.workspace }}

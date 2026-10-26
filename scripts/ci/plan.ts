@@ -1,10 +1,9 @@
 /**
- * Decides what the deploy workflow builds. Run from a full clone with `origin/main` and, when it exists,
- * `origin/gh-pages` fetched. Outputs `matrix` (JSON), `has-builds`, `propose-version` and `propose-tag`.
+ * Decides what the deploy workflow builds. Run from a clone with `origin/main` fetched. Outputs `matrix` (JSON), `has-builds`, `propose-version` and `propose-tag`.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
-import { planDeploy, RELEASE_BRANCH_RE, type DeployEvent } from "../../lib/deploy-plan.ts";
+import { planDeploy, type DeployEvent } from "../../lib/deploy-plan.ts";
 import { parseVersionRegistry } from "../../lib/versions.ts";
 import { setOutputs } from "./output.ts";
 
@@ -23,7 +22,7 @@ function readEvent(): DeployEvent {
         : {};
     switch (name) {
         case "push":
-            return { kind: "push", branch: process.env.GITHUB_REF_NAME ?? "" };
+            return { kind: "push" };
         case "repository_dispatch": {
             const action = payload.action;
             const client = (payload.client_payload ?? {}) as { tag?: string; prerelease?: boolean | string };
@@ -46,13 +45,7 @@ function readEvent(): DeployEvent {
 }
 
 const registry = parseVersionRegistry(JSON.parse(git("show", "origin/main:versions.json") || "{}"));
-const branches = git("ls-remote", "--heads", "origin")
-    .split("\n")
-    .map((line) => line.split("refs/heads/")[1] ?? "")
-    .filter((branch) => RELEASE_BRANCH_RE.test(branch));
-const published = git("ls-tree", "-d", "--name-only", "origin/gh-pages").split("\n").filter(Boolean);
-
-const plan = planDeploy({ event: readEvent(), registry, branches, published });
+const plan = planDeploy({ event: readEvent(), registry });
 for (const note of plan.notes) console.log(note);
 
 setOutputs({

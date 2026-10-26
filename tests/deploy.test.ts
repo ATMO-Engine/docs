@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { planDeploy, type PlanInput } from "../lib/deploy-plan.ts";
-import { docsVersionOf, latestGreenCommit, latestPatchTag, parseReleaseTag } from "../lib/engine.ts";
-import { addReleasedVersion, releaseBranchConfig } from "../lib/release.ts";
+import { docsVersionOf, latestDocumentableCommit, latestPatchTag, parseReleaseTag } from "../lib/engine.ts";
+import { addReleasedVersion } from "../lib/release.ts";
 import type { VersionRegistry } from "../lib/versions.ts";
 
 const latestOnly: VersionRegistry = {
@@ -19,12 +19,7 @@ const released: VersionRegistry = {
 };
 
 function plan(overrides: Partial<PlanInput> & Pick<PlanInput, "event">) {
-    return planDeploy({
-        registry: released,
-        branches: ["1.0", "1.1"],
-        published: ["latest", "1.0", "1.1", "stable"],
-        ...overrides,
-    });
+    return planDeploy({ registry: released, ...overrides });
 }
 
 describe("release tags", () => {
@@ -53,45 +48,56 @@ describe("release tags", () => {
         expect(latestPatchTag(tags, "2.0")).toBeNull();
     });
 
-    it("finds the newest commit that passed CI on push", async () => {
+    it("documents the newest commit that passed the docs check and did not fail the build", async () => {
+        const builds: Record<string, { conclusion: string | null }[]> = {
+            c3: [{ conclusion: null }],
+            c2: [{ conclusion: "failure" }],
+            c1: [],
+        };
         const calls: string[] = [];
-        const fakeFetch = (async (url: string | URL | Request) => {
-            calls.push(String(url));
-            return new Response(JSON.stringify({ workflow_runs: [{ head_sha: "abc123" }] }));
+        const fakeFetch = (async (input: string | URL | Request) => {
+            const url = new URL(String(input));
+            calls.push(url.pathname + url.search);
+            const sha = url.searchParams.get("head_sha");
+            const runs = sha
+                ? (builds[sha] ?? []).map((run) => ({ head_sha: sha, status: "completed", ...run }))
+                : ["c3", "c2", "c1", "c0"].map((head_sha) => ({
+                      head_sha,
+                      status: "completed",
+                      conclusion: "success",
+                  }));
+            return new Response(JSON.stringify({ workflow_runs: runs }));
         }) as typeof fetch;
-        await expect(latestGreenCommit("ATMO-Engine/atmo", "build.yml", "main", { fetch: fakeFetch })).resolves.toBe(
-            "abc123",
-        );
+
+        const workflows = { docs: "docs.yml", build: "build.yml" };
+        await expect(
+            latestDocumentableCommit("ATMO-Engine/atmo", workflows, "main", { fetch: fakeFetch }),
+        ).resolves.toBe("c1");
         expect(calls[0]).toBe(
-            "https://api.github.com/repos/ATMO-Engine/atmo/actions/workflows/build.yml/runs?branch=main&event=push&status=success&per_page=1",
+            "/repos/ATMO-Engine/atmo/actions/workflows/docs.yml/runs?branch=main&event=push&status=success&per_page=20",
         );
+        expect(calls).toHaveLength(4);
     });
 });
 
 describe("planDeploy", () => {
     it("rebuilds latest when the engine's main passes CI, or on schedule", () => {
         for (const event of [{ kind: "engine-main" }, { kind: "schedule" }] as const) {
-            expect(plan({ event }).builds).toEqual([{ version: "latest", branch: "main", path: "latest" }]);
+            expect(plan({ event }).builds).toEqual([{ version: "latest", path: "latest" }]);
         }
     });
 
-    it("rebuilds a release branch, and /stable/ when it is the stable version", () => {
-        expect(plan({ event: { kind: "push", branch: "1.0" } }).builds).toEqual([
-            { version: "1.0", branch: "1.0", path: "1.0" },
-        ]);
-        expect(plan({ event: { kind: "push", branch: "1.1" } }).builds).toEqual([
-            { version: "1.1", branch: "1.1", path: "1.1" },
-            { version: "1.1", branch: "1.1", path: "stable" },
+    it("rebuilds every version when docs main changes", () => {
+        expect(plan({ event: { kind: "push" } }).builds).toEqual([
+            { version: "latest", path: "latest" },
+            { version: "1.1", path: "1.1" },
+            { version: "1.1", path: "stable" },
+            { version: "1.0", path: "1.0" },
         ]);
     });
 
-    it("builds versions merged into versions.json but not published yet", () => {
-        const result = plan({ event: { kind: "push", branch: "main" }, published: ["latest", "1.0"] });
-        expect(result.builds.map((b) => b.path)).toEqual(["latest", "1.1", "stable"]);
-    });
-
-    it("does not publish a release branch that versions.json doesn't list yet", () => {
-        const result = plan({ event: { kind: "push", branch: "1.2" }, branches: ["1.0", "1.1", "1.2"] });
+    it("does not build a version that versions.json doesn't list", () => {
+        const result = plan({ event: { kind: "manual", version: "1.2" } });
         expect(result.builds).toEqual([]);
         expect(result.notes[0]).toContain("not listed in versions.json");
     });
@@ -122,27 +128,12 @@ describe("planDeploy", () => {
     });
 
     it("works with only latest, before the first release", () => {
-        const result = planDeploy({
-            event: { kind: "push", branch: "main" },
-            registry: latestOnly,
-            branches: [],
-            published: [],
-        });
-        expect(result.builds).toEqual([{ version: "latest", branch: "main", path: "latest" }]);
+        const result = planDeploy({ event: { kind: "push" }, registry: latestOnly });
+        expect(result.builds).toEqual([{ version: "latest", path: "latest" }]);
     });
 });
 
 describe("release helpers", () => {
-    it("pins a release branch's config to its version and engine tag", () => {
-        const source =
-            'export const docsConfig = defineDocsConfig({\n    version: "latest",\n    engine: {\n        repository: "ATMO-Engine/atmo",\n        ref: "main",\n        ciWorkflow: "build.yml",\n    },\n});\n';
-        const result = releaseBranchConfig(source, "1.2", "1.2.0");
-        expect(result).toContain('version: "1.2",');
-        expect(result).toContain('ref: "1.2.0",');
-        expect(result).toContain('repository: "ATMO-Engine/atmo",');
-        expect(() => releaseBranchConfig("export default {}", "1.2", "1.2.0")).toThrow("could not find");
-    });
-
     it("adds a release as the new stable version, after latest", () => {
         const next = addReleasedVersion(released, "1.2", "1.2.0");
         expect(next.stable).toBe("1.2");

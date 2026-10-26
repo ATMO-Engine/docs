@@ -54,7 +54,11 @@ describe("version registry", () => {
 describe("resolveDocsConfig", () => {
     const base = defineDocsConfig({
         version: "latest",
-        engine: { repository: "ATMO-Engine/atmo", ref: "main", ciWorkflow: "build.yml" },
+        engine: {
+            repository: "ATMO-Engine/atmo",
+            ref: "main",
+            workflows: { docs: "docs.yml", build: "build.yml" },
+        },
         repository: "ATMO-Engine/docs",
         hostname: "https://docs.atmo-engine.com",
         api: { exclude: [], includePrivate: false },
@@ -65,6 +69,7 @@ describe("resolveDocsConfig", () => {
         expect(config.siteBase).toBe("/");
         expect(config.base).toBe("/latest/");
         expect(config.engineDir).toBe(path.resolve(ROOT_DIR, "../atmo"));
+        expect(config.engineDocsDir).toBe(path.resolve(ROOT_DIR, "../atmo/docs"));
     });
 
     it("applies environment overrides", () => {

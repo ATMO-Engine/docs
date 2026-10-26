@@ -5,3 +5,8 @@ dist/
 .vitepress/dist/
 *.log
 .DS_Store
+
+# Pages copied from the engine's docs/ folder (lib/engine-docs.ts). Pages owned by this repository are listed here.
+/content/en/*
+!/content/en/index.md
+!/content/en/contributing/

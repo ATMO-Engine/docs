@@ -13,7 +13,7 @@ export interface VersionEntry {
 }
 
 export interface VersionRegistry {
-    /** Slug that `/stable/` points at, `null` until the first release branch exists. */
+    /** Slug that `/stable/` points at, `null` until the first release. */
     stable: string | null;
     versions: VersionEntry[];
 }

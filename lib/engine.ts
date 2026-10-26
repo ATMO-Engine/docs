@@ -1,6 +1,6 @@
 /**
  * Engine refs for CI: which engine commit each documentation version is built from.
- * - `latest`: the newest commit of the engine branch whose CI workflow passed on push.
+ * - `latest`: the newest documentable commit of the engine branch (see `latestDocumentableCommit`).
  * - `X.Y`: the newest non-prerelease `X.Y.Z` tag (`v` prefix optional).
  */
 
@@ -60,19 +60,38 @@ async function github<T>(url: string, options: GitHubOptions): Promise<T> {
     return (await response.json()) as T;
 }
 
-/** Head commit of the newest successful run of `workflow` triggered by a push to `branch`. */
-export async function latestGreenCommit(
+interface WorkflowRuns {
+    workflow_runs: { head_sha: string; status: string; conclusion: string | null }[];
+}
+
+const CANDIDATE_COMMITS = 20;
+
+/**
+ * Newest commit pushed to `branch` whose `docs` workflow passed and whose `build` workflow passed or was skipped
+ * (documentation-only commits).
+ */
+export async function latestDocumentableCommit(
     repository: string,
-    workflow: string,
+    workflows: { docs: string; build: string },
     branch: string,
     options: GitHubOptions = {},
 ): Promise<string | null> {
-    const query = new URLSearchParams({ branch, event: "push", status: "success", per_page: "1" });
-    const runs = await github<{ workflow_runs: { head_sha: string }[] }>(
-        `/repos/${repository}/actions/workflows/${encodeURIComponent(workflow)}/runs?${query}`,
-        options,
-    );
-    return runs.workflow_runs[0]?.head_sha ?? null;
+    const runsOf = (workflow: string, query: Record<string, string>) =>
+        github<WorkflowRuns>(
+            `/repos/${repository}/actions/workflows/${encodeURIComponent(workflow)}/runs?${new URLSearchParams(query)}`,
+            options,
+        );
+    const docsRuns = await runsOf(workflows.docs, {
+        branch,
+        event: "push",
+        status: "success",
+        per_page: String(CANDIDATE_COMMITS),
+    });
+    for (const sha of new Set(docsRuns.workflow_runs.map((run) => run.head_sha))) {
+        const build = (await runsOf(workflows.build, { head_sha: sha, event: "push", per_page: "1" })).workflow_runs[0];
+        if (!build || build.conclusion === "success") return sha;
+    }
+    return null;
 }
 
 export async function listTags(repository: string, options: GitHubOptions = {}): Promise<string[]> {

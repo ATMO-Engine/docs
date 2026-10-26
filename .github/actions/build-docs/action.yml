@@ -1,7 +1,7 @@
 name: Build documentation
 description: >
     Resolve the engine commit to document, generate the C++ API model with Doxygen and build the site into dist/.
-    Expects the docs branch to be checked out and the Setup action to have run.
+    Expects the docs repository to be checked out and the Setup action to have run.
 
 inputs:
     version:
@@ -28,6 +28,7 @@ runs:
           run: pnpm tsx scripts/ci/engine-ref.ts
           env:
               GITHUB_TOKEN: ${{ github.token }}
+              DOCS_VERSION: ${{ inputs.version }}
 
         - uses: actions/checkout@v4
           with:
@@ -35,34 +36,22 @@ runs:
               ref: ${{ steps.engine.outputs.ref }}
               path: engine
 
-        - id: doxygen-cache
-          uses: actions/cache@v4
+        - uses: ./.github/actions/doxygen
           with:
-              path: ${{ runner.temp }}/doxygen-${{ inputs.doxygen-version }}
-              key: doxygen-${{ runner.os }}-${{ inputs.doxygen-version }}
-
-        - name: Install Doxygen
-          if: steps.doxygen-cache.outputs.cache-hit != 'true'
-          shell: bash
-          env:
-              DOXYGEN_VERSION: ${{ inputs.doxygen-version }}
-          run: |
-              curl -fsSL "https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_VERSION//./_}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz" \
-                  | tar -xz -C "$RUNNER_TEMP"
-
-        - shell: bash
-          run: echo "$RUNNER_TEMP/doxygen-${{ inputs.doxygen-version }}/bin" >> "$GITHUB_PATH"
+              version: ${{ inputs.doxygen-version }}
 
         - name: Generate API model
           shell: bash
           run: pnpm api
           env:
               ATMO_ENGINE_DIR: engine
+              ATMO_ENGINE_REF: ${{ steps.engine.outputs.name }}
 
         - name: Build site
           shell: bash
           run: pnpm build
           env:
               ATMO_ENGINE_DIR: engine
+              ATMO_ENGINE_REF: ${{ steps.engine.outputs.name }}
               DOCS_VERSION: ${{ inputs.version }}
               DOCS_PATH: ${{ inputs.path }}

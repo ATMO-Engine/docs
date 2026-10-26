@@ -1,10 +1,10 @@
 name: Deploy
 
-# Every documentation version is built from its own branch (`main` → latest, `1.0` → 1.0...) and committed into
-# its own folder of the gh-pages branch, which GitHub Pages serves. See content/en/contributing/versioning.md.
+# Every documentation version is built from main against its engine ref and committed into its own folder of the
+# gh-pages branch, which GitHub Pages serves. See content/en/contributing/versioning.md.
 on:
     push:
-        branches: [main, "[0-9]+.[0-9]+"]
+        branches: [main]
     # Sent by the engine's notify-docs workflow.
     repository_dispatch:
         types: [engine-main, engine-release]
@@ -37,8 +37,7 @@ jobs:
             propose-tag: ${{ steps.plan.outputs.propose-tag }}
         steps:
             - uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
+            - run: git fetch --depth=1 origin main
             - uses: ./.github/actions/setup
             - id: plan
               run: pnpm tsx scripts/ci/plan.ts
@@ -56,7 +55,7 @@ jobs:
         steps:
             - uses: actions/checkout@v4
               with:
-                  ref: ${{ matrix.branch }}
+                  ref: main
             - uses: ./.github/actions/setup
             - uses: ./.github/actions/build-docs
               with:
@@ -135,28 +134,16 @@ jobs:
                   ref: main
                   fetch-depth: 0
             - uses: ./.github/actions/setup
-            - name: Create the release branch and the pull request publishing it
+            - name: Open the pull request publishing it
               run: |
                   git config user.name "github-actions[bot]"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-                  # 1. The X.Y docs branch, pinned to the engine release. Not published until versions.json lists it.
-                  git switch -c "$VERSION"
-                  pnpm tsx scripts/ci/release.ts branch-config "$VERSION" "$TAG"
-                  pnpm prettier --write docs.config.ts
-                  git commit -am "Create the $VERSION documentation for engine $TAG"
-                  git push origin "$VERSION"
-
-                  # 2. A pull request listing it in versions.json as the new stable version.
-                  git switch main
                   git switch -c "release/$VERSION"
-                  pnpm tsx scripts/ci/release.ts registry "$VERSION" "$TAG"
+                  pnpm tsx scripts/ci/release.ts "$VERSION" "$TAG"
                   pnpm prettier --write versions.json
                   git commit -am "Publish the $VERSION documentation"
                   git push --force origin "release/$VERSION"
                   gh pr create --base main --head "release/$VERSION" \
                       --title "Publish the $VERSION documentation" \
-                      --body "The engine released \`$TAG\`. The \`$VERSION\` branch was created from \`main\` and pinned to it.
-
-                  Merging this pull request adds $VERSION to \`versions.json\` as the stable version: the deploy workflow then publishes \`/$VERSION/\` and moves \`/stable/\` to it. Prepare the branch first if its pages need changes for this release." \
+                      --body "The engine released \`$TAG\`. Merging this pull request adds $VERSION to \`versions.json\` as the stable version: the deploy workflow then publishes \`/$VERSION/\` from the engine's \`$VERSION.x\` tags and moves \`/stable/\` to it." \
                       || gh pr view "release/$VERSION"

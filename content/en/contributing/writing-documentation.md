@@ -7,16 +7,21 @@ description: Page ids, references to pages and C++ symbols, and how to preview y
 
 # Writing documentation
 
-The site has two halves:
+The site has three sources:
 
-- **Guides and manual** — Markdown files written by hand in `content/en/`.
+- **Guides and manual** — Markdown files in the engine repository, under `docs/en/`. Update them in the pull request
+  that changes the behavior they describe.
 - **API reference** — generated from the engine's source comments by Doxygen. To change it, edit the comments in
-  the engine repository, not this one.
+  the engine repository.
+- **Site pages** — the home page and these contributing pages, in this repository under `content/en/`.
+
+When the site is built, the engine's `docs/en/` pages are copied into `content/en/`, so both sets of pages form one
+tree and can reference each other. A page can't exist in both repositories.
 
 ## Running the site locally {#local}
 
-You need Node.js 22 or newer, [pnpm](https://pnpm.io) and [Doxygen](https://www.doxygen.nl), with the engine
-cloned next to this repository (`../atmo`).
+You need Node.js 22 or newer, [pnpm](https://pnpm.io) and [Doxygen](https://www.doxygen.nl), with this repository
+cloned next to the engine (`../atmo`).
 
 ```sh
 pnpm install
@@ -24,11 +29,15 @@ pnpm api        # run Doxygen on ../atmo and build the API model
 pnpm dev        # http://localhost:5173/latest/
 ```
 
-Set `ATMO_ENGINE_DIR` if the engine lives somewhere else. Run `pnpm api` again after changing engine comments.
+Set `ATMO_ENGINE_DIR` if the engine lives somewhere else. Edits to the engine's `docs/` pages show up in the dev
+server right away; run `pnpm api` again after changing engine comments.
+
+The copied engine pages are ignored by git in this repository. A new page owned by this repository must be added
+to the exceptions at the end of its `.gitignore`.
 
 ## Pages {#pages}
 
-Every Markdown file under `content/en/` is a page. Its frontmatter controls how it is referenced and listed:
+Every Markdown file under the engine's `docs/en/` and this repository's `content/en/` is a page. Its frontmatter controls how it is referenced and listed:
 
 ```md
 ---
@@ -78,5 +87,12 @@ Anchors on the current page don't need a reference: use a regular link, `[text](
 
 ## Style {#style}
 
-Formatting is enforced by Prettier (4 spaces, double quotes). Run `pnpm format` before committing; the
-`pnpm format:check` script fails on unformatted files.
+Formatting is enforced by Prettier (4 spaces, double quotes). In this repository, run `pnpm format` before
+committing; the `pnpm format:check` script fails on unformatted files. For engine pages, run
+`pnpm exec prettier --write ../atmo/docs` from this repository.
+
+## Checks on engine pull requests {#engine-checks}
+
+The engine's `docs` workflow runs on every pull request and push. It builds the site from the pull request's
+checkout with the tooling of this repository's `main` branch, so it fails when a page is not formatted, or when a
+reference is broken: a renamed class, a removed page or heading. Fix the reference in the same pull request.

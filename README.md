@@ -1,7 +1,8 @@
 # ATMO documentation
 
-Source of [docs.atmo-engine.com](https://docs.atmo-engine.com): hand-written guides plus a C++ API reference
-generated from the [engine](https://github.com/ATMO-Engine/atmo) with Doxygen. Built with VitePress.
+Source of [docs.atmo-engine.com](https://docs.atmo-engine.com), built with VitePress. The guides and manual live in
+the [engine](https://github.com/ATMO-Engine/atmo) repository's `docs/` folder; this repository holds the site, its
+home and contributing pages, and generates the C++ API reference from the engine with Doxygen.
 
 ## Quick start
 
@@ -21,13 +22,13 @@ pnpm dev     # http://localhost:5173/latest/
 
 ## Layout
 
-| Path               | Contents                                                                  |
-| ------------------ | ------------------------------------------------------------------------- |
-| `content/en/`      | Hand-written pages (served at the site root; other locales go next to it) |
-| `content/api/cpp/` | Dynamic routes rendering the generated C++ reference                      |
-| `lib/doxygen/`     | Doxygen XML → API model → Markdown pages                                  |
-| `lib/refs/`        | `[[...]]` reference system (page ids, anchors, C++ symbols)               |
-| `docs.config.ts`   | Version and engine ref documented by this branch                          |
-| `versions.json`    | Published versions, read at runtime by every version's switcher           |
+| Path               | Contents                                                            |
+| ------------------ | ------------------------------------------------------------------- |
+| `content/en/`      | Site pages, plus the engine's `docs/en/` pages copied at build time |
+| `content/api/cpp/` | Dynamic routes rendering the generated C++ reference                |
+| `lib/doxygen/`     | Doxygen XML → API model → Markdown pages                            |
+| `lib/refs/`        | `[[...]]` reference system (page ids, anchors, C++ symbols)         |
+| `docs.config.ts`   | Engine repository, branch and workflows documented by `latest`      |
+| `versions.json`    | Published versions, read at runtime by every version's switcher     |
 
 See `content/en/contributing/` for the writing guide and the versioning model.

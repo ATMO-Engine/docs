@@ -1,10 +1,9 @@
 import { docsVersionOf } from "./engine.ts";
 import type { VersionRegistry } from "./versions.ts";
 
-/** One build of the site: a docs branch built as `version`, published under `path`. */
+/** One build of the site: `version` built from the docs `main` branch, published under `path`. */
 export interface BuildTarget {
     version: string;
-    branch: string;
     path: string;
 }
 
@@ -22,7 +21,7 @@ export interface DeployPlan {
 }
 
 export type DeployEvent =
-    | { kind: "push"; branch: string }
+    | { kind: "push" }
     | { kind: "engine-main" }
     | { kind: "engine-release"; tag: string; prerelease: boolean }
     | { kind: "manual"; version: string }
@@ -32,23 +31,16 @@ export interface PlanInput {
     event: DeployEvent;
     /** versions.json of the docs `main` branch. */
     registry: VersionRegistry;
-    /** Release branches of the docs repository (`1.0`, `1.1`...). */
-    branches: string[];
-    /** Top-level folders already published on gh-pages. */
-    published: string[];
 }
 
-export const RELEASE_BRANCH_RE = /^\d+\.\d+$/;
-
 function targetsFor(version: string, registry: VersionRegistry): BuildTarget[] {
-    const branch = version === "latest" ? "main" : version;
-    const targets = [{ version, branch, path: version }];
-    if (registry.stable === version) targets.push({ version, branch, path: "stable" });
+    const targets = [{ version, path: version }];
+    if (registry.stable === version) targets.push({ version, path: "stable" });
     return targets;
 }
 
-/** Decides what a deploy run builds, from the event that triggered it and the current state of the site. */
-export function planDeploy({ event, registry, branches, published }: PlanInput): DeployPlan {
+/** Decides what a deploy run builds, from the event that triggered it and the published versions. */
+export function planDeploy({ event, registry }: PlanInput): DeployPlan {
     const listed = new Set(registry.versions.map((v) => v.slug));
     const builds: BuildTarget[] = [];
     const notes: string[] = [];
@@ -56,11 +48,7 @@ export function planDeploy({ event, registry, branches, published }: PlanInput):
 
     const add = (version: string, why: string) => {
         if (version !== "latest" && !listed.has(version)) {
-            notes.push(`skip ${version}: not listed in versions.json on main (${why})`);
-            return;
-        }
-        if (version !== "latest" && !branches.includes(version)) {
-            notes.push(`skip ${version}: no "${version}" branch in the docs repository (${why})`);
+            notes.push(`skip ${version}: not listed in versions.json (${why})`);
             return;
         }
         builds.push(...targetsFor(version, registry));
@@ -69,20 +57,9 @@ export function planDeploy({ event, registry, branches, published }: PlanInput):
 
     switch (event.kind) {
         case "push":
-            if (event.branch === "main") {
-                add("latest", "docs main changed");
-                // A merged release PR lists a version that was never published: build it now.
-                for (const version of registry.versions) {
-                    if (version.slug === "latest") continue;
-                    const missing =
-                        !published.includes(version.slug) ||
-                        (registry.stable === version.slug && !published.includes("stable"));
-                    if (missing) add(version.slug, "listed but not published yet");
-                }
-            } else if (RELEASE_BRANCH_RE.test(event.branch)) {
-                add(event.branch, "release branch changed");
-            } else {
-                notes.push(`skip push to ${event.branch}: not main or a release branch`);
+            add("latest", "docs main changed");
+            for (const version of registry.versions) {
+                if (version.slug !== "latest") add(version.slug, "docs main changed");
             }
             break;
         case "engine-main":
@@ -93,7 +70,7 @@ export function planDeploy({ event, registry, branches, published }: PlanInput):
             const version = docsVersionOf(event.tag);
             if (!version || event.prerelease) {
                 notes.push(`engine release ${event.tag} is a prerelease or not X.Y.Z: nothing to publish`);
-            } else if (branches.includes(version)) {
+            } else if (listed.has(version)) {
                 add(version, `engine released ${event.tag}`);
             } else {
                 propose = { version, tag: event.tag };

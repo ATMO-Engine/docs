@@ -79,11 +79,11 @@ export function createRefSystem(options: RefSystemOptions): RefSystem {
     };
 }
 
-export function formatProblems(problems: RefProblem[]): string {
+export function formatProblems(problems: RefProblem[], sourceOf: (file: string) => string = (file) => file): string {
     return problems
         .map(
             (p) =>
-                `  - ${p.file}${p.ref ? `: ${p.ref}` : ""}\n      ${p.ref ? p.message : p.message.replace(/^[^:]*:\s*/, "")}`,
+                `  - ${sourceOf(p.file)}${p.ref ? `: ${p.ref}` : ""}\n      ${p.ref ? p.message : p.message.replace(/^[^:]*:\s*/, "")}`,
         )
         .join("\n");
 }
